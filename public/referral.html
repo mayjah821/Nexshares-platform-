@@ -78,13 +78,13 @@ Copy Referral Link
 async function loadReferral(){
 
 const token = localStorage.getItem("token")
-
-let res = await fetch("/referral-data",{
+let res = await
+fetch("https://nexshares.onrender.com/referral-data",{
 headers:{
 Authorization:"Bearer "+token
 }
 })
-
+               
 let data = await res.json()
 
 if(data.status==="ok"){
