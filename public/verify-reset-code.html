@@ -1,0 +1,67 @@
+<!DOCTYPE html><html>
+<head>
+<title>Verify Reset Code</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(#0b0e11,#121826);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+}
+
+.container{
+width:95%;
+max-width:400px;
+background:rgba(255,255,255,0.05);
+padding:25px;
+border-radius:20px;
+}
+
+input,button{
+width:100%;
+padding:14px;
+margin-top:12px;
+border-radius:10px;
+border:none;
+}
+
+button{
+background:linear-gradient(45deg,#f3ba2f,#ffcc4d);
+}
+
+</style></head><body><div class="container"><h2>Enter Verification Code</h2><input id="code" placeholder="Enter reset code"><button onclick="verifyCode()">Verify Code</button>
+
+</div><script>
+
+async function verifyCode(){
+
+let email = localStorage.getItem("resetEmail")
+let code = document.getElementById("code").value
+
+let res = await fetch("/verify-reset-code",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+code
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+if(data.status==="success"){
+localStorage.setItem("resetCode",code)
+window.location.href="reset-new-password.html"
+}
+
+}
+
+</script></body>
+</html>

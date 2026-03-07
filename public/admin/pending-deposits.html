@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pending Deposits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f2027;
+color:white;
+padding:20px;
+}
+
+h2{
+text-align:center;
+}
+
+.deposit{
+background:rgba(255,255,255,0.1);
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:6px;
+background:#00c6ff;
+font-weight:bold;
+margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Pending Deposits</h2>
+
+<div id="depositList"></div>
+
+<script>
+
+async function loadDeposits(){
+
+try{
+
+let res = await fetch("/admin/pending-deposits")
+
+let deposits = await res.json()
+
+let container = document.getElementById("depositList")
+
+container.innerHTML = ""
+
+if(!deposits || deposits.length === 0){
+
+container.innerHTML = "<p>No pending deposits</p>"
+return
+
+}
+
+deposits.forEach(d=>{
+
+container.innerHTML += `
+<div class="deposit">
+
+<p><b>Email:</b> ${d.email}</p>
+<p><b>Amount:</b> KES ${d.amount}</p>
+<p><b>Mpesa Code:</b> ${d.mpesaCode}</p>
+
+<button onclick="approveDeposit('${d._id}')">
+Approve Deposit
+</button>
+
+<button onclick="rejectDeposit('${d._id}')">
+Reject
+</button>
+</div>
+`
+
+})
+
+}catch(err){
+
+console.log(err)
+
+}
+
+}
+
+async function approveDeposit(id){
+
+if(!id){
+alert("Deposit ID missing")
+return
+}
+
+try{
+
+let res = await fetch("/admin/approve-deposit",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+depositId:id
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+/* Reload pending list */
+loadDeposits()
+
+}catch(err){
+
+console.log(err)
+
+alert("Approval failed")
+
+}
+
+}
+
+/* Load deposits when page opens */
+
+loadDeposits()
+
+
+async function rejectDeposit(id){
+
+let res = await fetch("/admin/reject-deposit",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+depositId:id
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+loadDeposits()
+
+}
+
+</script>
+</body>
+</html>
+

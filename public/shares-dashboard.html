@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>My Shares</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+display:flex;
+justify-content:center;
+}
+
+.container{
+width:95%;
+max-width:400px;
+padding:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.1);
+padding:18px;
+border-radius:12px;
+margin-top:15px;
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+margin-top:12px;
+background:#00c6ff;
+color:black;
+font-weight:bold;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+justify-content:center;
+align-items:center;
+}
+
+.modalbox{
+background:white;
+color:black;
+padding:20px;
+border-radius:12px;
+width:85%;
+max-width:320px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>My Shares</h2>
+
+<div class="card">
+<p>Shares Owned</p>
+<h3 id="sharesOwned"></h3>
+</div>
+
+<div class="card">
+<p>Daily Profit</p>
+<h3 id="dailyProfit"></h3>
+</div>
+
+<div class="card">
+<p>Total Profit Earned</p>
+<h3 id="totalProfit"></h3>
+</div>
+
+<div class="card">
+<p>Days Completed</p>
+<h3 id="daysDone"></h3>
+</div>
+
+<button onclick="openWithdraw()">
+Withdraw Shares Profit
+</button>
+
+<div class="card" style="text-align:left;font-size:14px">
+
+<h3>Shares Withdrawal Policy</h3>
+
+<ul>
+
+<li>
+Shares profit withdrawal is available only after completing
+<b>3 cumulative profit earning days</b>.
+</li>
+
+<li>
+The system calculates profit based on total active earning days,
+not calendar days.
+</li>
+
+<li>
+Users must accumulate at least <b>3 days of profit generation</b>
+before submitting a shares profit withdrawal request.
+</li>
+
+<li>
+The withdrawal button will remain disabled until the
+minimum profit earning duration is achieved.
+</li>
+
+<li>
+All withdrawal requests are subject to platform verification rules.
+</li>
+
+</ul>
+
+</div>
+
+</div>
+
+<div id="withdrawModal" class="modal">
+
+<div class="modalbox">
+
+<h3>Withdraw Shares Profit</h3>
+
+<input id="mpesaNumber" placeholder="Enter MPESA Number">
+
+<input id="mpesaName" placeholder="Enter MPESA Name">
+
+<input id="withdrawAmount" placeholder="Enter Amount">
+
+<button onclick="submitWithdraw()">
+Submit Withdrawal
+</button>
+
+<button onclick="closeModal()">Cancel</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* LOAD SHARES DATA FROM SERVER */
+
+async function loadShares(){
+
+let email = localStorage.getItem("sessionEmail")
+
+if(!email){
+alert("Session expired")
+window.location.href="login.html"
+return
+}
+
+try{
+
+let res = await fetch("/shares-dashboard",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email})
+})
+
+let data = await res.json()
+
+if(data.status === "success"){
+
+document.getElementById("sharesOwned").innerText =
+data.shares || 0
+
+document.getElementById("dailyProfit").innerText =
+(data.dailyProfit || 0) + " KES/day"
+
+document.getElementById("daysDone").innerText =
+data.daysCompleted || 0
+
+document.getElementById("totalProfit").innerText =
+(data.totalProfit || 0) + " KES"
+
+}
+
+}catch(err){
+console.log(err)
+}
+
+}
+
+loadShares()
+
+
+/* WITHDRAWAL RULES */
+
+function openWithdraw(){
+
+let days = Number(document.getElementById("daysDone").innerText)
+
+let referralCount = Number(localStorage.getItem("referrals")) || 0
+
+if(days < 3){
+alert("Withdrawal allowed only after 3 cumulative profit days")
+return
+}
+
+if(referralCount < 4){
+alert("Minimum 4 referrals required to withdraw shares profits")
+return
+}
+
+document.getElementById("withdrawModal").style.display="flex"
+
+}
+
+
+function closeModal(){
+document.getElementById("withdrawModal").style.display="none"
+}
+
+
+/* WITHDRAW REQUEST */
+
+async function submitWithdraw(){
+
+let email = localStorage.getItem("sessionEmail")
+
+let number = document.getElementById("mpesaNumber").value
+let name = document.getElementById("mpesaName").value
+let amount = document.getElementById("withdrawAmount").value
+
+if(!number || !name || !amount){
+alert("Fill all fields")
+return
+}
+
+try{
+
+let res = await fetch("/withdraw-shares",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+number,
+name,
+amount:Number(amount)
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+if(data.status==="success"){
+closeModal()
+}
+
+}catch(err){
+console.log(err)
+alert("Withdrawal request failed")
+}
+
+}
+
+</script>
+
+</body>
+
+</html>

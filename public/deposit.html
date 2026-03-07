@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Deposit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f2027;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
+}
+
+/* SMALLER PAYMENT CARD */
+
+.container{
+width:85%;
+max-width:320px;
+background:linear-gradient(135deg,#1db954,#0f2027);
+padding:20px;
+border-radius:16px;
+box-shadow:0 0 20px rgba(0,0,0,0.3);
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+border:none;
+font-size:14px;
+}
+
+/* BUTTON */
+
+button{
+width:100%;
+padding:12px;
+margin-top:15px;
+border:none;
+border-radius:10px;
+background:#00c6ff;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* TILL DISPLAY */
+
+.tillBox{
+background:white;
+color:#1db954;
+padding:15px;
+border-radius:14px;
+text-align:center;
+margin:15px 0;
+}
+
+.tillNumber{
+font-size:36px;
+font-weight:bold;
+letter-spacing:2px;
+}
+
+.instructions{
+font-size:13px;
+line-height:1.5;
+opacity:0.9;
+}
+
+h3{
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+<p id="debugSession" style="color:red;font-size:12px"></p>
+<div class="container">
+
+<h3>Deposit Funds</h3>
+
+<p style="font-size:13px;text-align:center">
+⚠️ Automated payment system under maintenance.
+Use Mpesa Till below.
+</p>
+
+<div class="tillBox">
+
+<p style="font-size:14px;margin:0">Mpesa Till Number</p>
+
+<div class="tillNumber">
+8733066
+</div>
+
+</div>
+
+<div class="instructions">
+1. Open SIM Toolkit<br>
+2. Select M-Pesa<br>
+3. Choose Lipa na M-Pesa<br>
+4. Enter Till Number<br>
+5. Enter Amount<br>
+6. Enter Mpesa transaction code below
+</div>
+
+<input id="amount" placeholder="Enter amount paid">
+
+<input id="mpesaCode" placeholder="Mpesa transaction code">
+
+<button onclick="submitDeposit()">
+Submit Deposit Request
+</button>
+
+</div>
+
+<script>
+
+async function submitDeposit(){
+
+let email = localStorage.getItem("sessionEmail")
+
+if(!email || email === "null"){
+alert("Session expired. Please login again.")
+window.location.href="login.html"
+return
+}
+
+let amount = document.getElementById("amount").value.trim()
+let mpesaCode = document.getElementById("mpesaCode").value.trim()
+
+if(!amount || !mpesaCode){
+alert("Fill all deposit fields")
+return
+}
+
+try{
+
+let res = await fetch("/deposit",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email:email,
+amount:Number(amount),
+mpesaCode:mpesaCode
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+if(data.status==="success"){
+window.location.href="deposit-status.html"
+}
+
+}catch(err){
+
+console.log(err)
+alert("Deposit request failed")
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

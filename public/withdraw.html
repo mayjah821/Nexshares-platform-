@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Request Withdrawal</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{
+  font-family:Arial;
+  background:#0f2027;
+  color:white;
+  padding:20px;
+}
+.container{
+  max-width:400px;
+  margin:auto;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+  border:none;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:8px;
+  background:#00c6ff;
+  font-weight:bold;
+  cursor:pointer;
+}
+h3{text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h3>Request Withdrawal</h3>
+
+<input id="mpesaNumber" placeholder="Enter Mpesa number  receive ">
+<input id="mpesaName" placeholder="Enter Mpesa  name">
+<input id="withdrawAmount" placeholder="Enter amount to withdraw">
+
+<button onclick="submitWithdrawal()">Submit Withdrawal</button>
+</div>
+
+<script>
+async function submitWithdrawal(){
+
+  let email = localStorage.getItem("sessionEmail")
+
+  if(!email || email==="null"){
+    alert("Session expired. Login again.")
+    window.location.href="login.html"
+    return
+  }
+
+  let number = document.getElementById("mpesaNumber").value.trim()
+  let name = document.getElementById("mpesaName").value.trim()
+  let amount = document.getElementById("withdrawAmount").value.trim()
+
+  if(!number || !name || !amount){
+    alert("Fill all withdrawal fields")
+    return
+  }
+
+  try{
+
+    let res = await fetch("/withdraw-shares",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        email,
+        number,
+        name,
+        amount:Number(amount)
+      })
+    })
+
+    let data = await res.json()
+
+    alert(data.message)
+
+    if(data.status==="success"){
+      window.location.href="withdraw-status.html"
+    }
+
+  }catch(err){
+    console.log(err)
+    alert("Withdrawal request failed")
+  }
+
+}
+</script>
+
+</body>
+</html>

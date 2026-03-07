@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pending Transactions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  font-family: Arial;
+  background:#0f2027;
+  color:white;
+  padding:20px;
+}
+.container{
+  max-width:700px;
+  margin:auto;
+}
+.section{
+  margin-bottom:30px;
+}
+h2{
+  text-align:center;
+}
+.transactionBox{
+  background: rgba(255,255,255,0.1);
+  padding:15px;
+  border-radius:12px;
+  margin-top:10px;
+}
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:6px;
+  margin-top:10px;
+  margin-right:5px;
+  cursor:pointer;
+}
+.approveBtn{
+  background: #00c6ff;
+  color:white;
+}
+.rejectBtn{
+  background: #ff4d4d;
+  color:white;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2>Pending Transactions</h2>
+
+<div class="section">
+<h3>Pending Deposits</h3>
+<div id="depositList"></div>
+</div>
+
+<div class="section">
+<h3>Pending Withdrawals</h3>
+<div id="withdrawalList"></div>
+</div>
+
+</div>
+
+<script>
+// ⭐ Load Pending Deposits
+async function loadDeposits(){
+  let res = await fetch("/admin/pending-deposits")
+  let deposits = await res.json()
+  let container = document.getElementById("depositList")
+  container.innerHTML = ""
+  deposits.forEach(d=>{
+    container.innerHTML += `
+      <div class="transactionBox">
+        <p><b>Email:</b> ${d.email}</p>
+        <p><b>Amount:</b> KES ${d.amount}</p>
+        <p><b>Mpesa Code:</b> ${d.mpesaCode}</p>
+        <button class="approveBtn" onclick="approveDeposit('${d._id}')">Approve</button>
+        <button class="rejectBtn" onclick="rejectDeposit('${d._id}')">Reject</button>
+      </div>
+    `
+  })
+}
+
+// ⭐ Approve / Reject Deposits
+async function approveDeposit(id){
+  let res = await fetch("/admin/approve-deposit",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({depositId:id})
+  })
+  let data = await res.json()
+  alert(data.message)
+  loadDeposits()
+}
+
+async function rejectDeposit(id){
+  let res = await fetch("/admin/reject-deposit",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({depositId:id})
+  })
+  let data = await res.json()
+  alert(data.message)
+  loadDeposits()
+}
+
+// ⭐ Load Pending Withdrawals
+async function loadWithdrawals(){
+  let res = await fetch("/admin/pending-withdrawals")
+  let withdrawals = await res.json()
+  let container = document.getElementById("withdrawalList")
+  container.innerHTML = ""
+  withdrawals.forEach(d=>{
+    container.innerHTML += `
+      <div class="transactionBox">
+        <p><b>Email:</b> ${d.email}</p>
+        <p><b>Amount:</b> KES ${d.amount}</p>
+        <p><b>Mpesa Number:</b> ${d.mpesaNumber}</p>
+             <p><b>Mpesa Name:</b> ${d.mpesaName}</p>
+        <button class="approveBtn" onclick="approveWithdrawal('${d._id}')">Approve</button>
+        <button class="rejectBtn" onclick="rejectWithdrawal('${d._id}')">Reject</button>
+      </div>
+    `
+  })
+}
+
+// ⭐ Approve / Reject Withdrawals
+async function approveWithdrawal(id){
+  let res = await fetch("/admin/approve-withdrawal",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({withdrawalId:id})
+  })
+  let data = await res.json()
+  alert(data.message)
+  loadWithdrawals()
+}
+
+async function rejectWithdrawal(id){
+  let res = await fetch("/admin/reject-withdrawal",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({withdrawalId:id})
+  })
+  let data = await res.json()
+  alert(data.message)
+  loadWithdrawals()
+}
+
+// ⭐ Initial Load
+loadDeposits()
+loadWithdrawals()
+</script>
+
+</body>
+</html>

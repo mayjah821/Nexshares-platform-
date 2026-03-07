@@ -1,0 +1,126 @@
+<!DOCTYPE html><html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0b0e11">
+<title>Register | NexShares</title><style>
+                                                                            
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(#0b0e11,#121826);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+overflow:hidden;
+}
+
+.container{
+width:95%;
+max-width:400px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(10px);
+padding:20px;
+box-sizing:border-box;
+border-radius:20px;
+}
+
+h2{
+text-align:center;
+color:#f3ba2f;
+}
+
+input{
+width:100%;
+padding:14px;
+margin:10px 0;
+border:none;
+border-radius:10px;
+outline:none;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+font-size:17px;
+cursor:pointer;
+margin-top:15px;
+background:linear-gradient(45deg,#1e90ff,#4da3ff);
+color:white;
+}
+
+.link{
+text-align:center;
+margin-top:15px;
+}
+
+.link a{
+color:#f3ba2f;
+text-decoration:none;
+}
+
+</style></head><body><div class="container"><h2>Create Account</h2><input id="username" placeholder="Username"><input id="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><input id="referral" placeholder="Referral Code (Optional)"><button onclick="register()">Register</button>
+
+<div class="link">
+Already have account?
+<a href="login.html">Login</a>
+</div></div><script>
+
+async function register(){
+
+let btn = event.target
+btn.disabled = true
+btn.innerText = "Registering..."
+
+let username = document.getElementById("username").value.trim()
+let email = document.getElementById("email").value.trim()
+let password = document.getElementById("password").value.trim()
+let referral = document.getElementById("referral").value.trim()
+
+let res = await fetch("/register",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+username,
+email,
+password,
+referral
+})
+})
+
+let data = await res.json()
+
+alert(data.message || "Registration complete")
+
+if(data.status === "success"){
+
+/* SAVE EMAIL FOR VERIFICATION */
+
+localStorage.setItem("verifyEmail", email)
+
+/* REDIRECT */
+
+window.location.href = "verify.html"
+
+}
+
+btn.disabled = false
+btn.innerText = "Register"
+
+}
+</script>
+
+
+<script>
+const params = new URLSearchParams(window.location.search)
+let referral = params.get("ref") || null
+</script>
+
+</body>
+</html>
+         

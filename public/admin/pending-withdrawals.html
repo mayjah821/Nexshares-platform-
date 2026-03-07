@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pending Withdrawals</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f2027;
+color:white;
+padding:20px;
+padding:20px;
+}
+
+.container{
+max-width:500px;
+margin:auto;
+}
+
+.withdrawalBox{
+background:rgba(255,255,255,0.1);
+padding:18px;
+border-radius:14px;
+margin-top:18px;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:8px;
+background:#00c6ff;
+color:white;
+width:100%;
+margin-top:10px;
+cursor:pointer;
+font-weight:bold;
+}
+
+h2{text-align:center;}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Pending Withdrawals</h2>
+
+<div id="withdrawalList"></div>
+
+</div>
+
+<script>
+
+/* Load Withdrawals */
+
+async function loadWithdrawals(){
+
+try{
+
+let res = await fetch("/admin/pending-withdrawals")
+let withdrawals = await res.json()
+
+let container = document.getElementById("withdrawalList")
+container.innerHTML = ""
+
+withdrawals.forEach(w=>{
+
+container.innerHTML += `
+<div class="withdrawalBox">
+
+<p><b>Email:</b> ${w.email}</p>
+<p><b>Amount:</b> ${w.amount}</p>
+<p><b>Status:</b> ${w.status}</p>
+
+<button onclick="approveWithdrawal('${w._id}')">
+Approve Withdrawal
+</button>
+
+<button onclick="rejectWithdrawal('${w._id}')">
+Reject Withdrawal
+</button>
+
+</div>
+`
+
+})
+
+}catch(err){
+console.log(err)
+}
+
+}
+
+/* Approve Withdrawal */
+
+async function approveWithdrawal(id){
+
+let res = await fetch("/admin/approve-withdrawal",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({withdrawalId:id})
+})
+
+let data = await res.json()
+
+alert(data.message)
+loadWithdrawals()
+
+}
+
+/* Reject Withdrawal */
+
+async function rejectWithdrawal(id){
+
+let res = await fetch("/admin/reject-withdrawal",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({withdrawalId:id})
+})
+
+let data = await res.json()
+
+alert(data.message)
+loadWithdrawals()
+
+}
+
+/* Auto Load */
+
+loadWithdrawals()
+
+</script>
+
+</body>
+</html>

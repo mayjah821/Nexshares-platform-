@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="en">
+<head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Login | NexShares</title><style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(#0b0e11,#121826);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+}
+
+.container{
+width:95%;
+max-width:400px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(10px);
+padding:25px;
+border-radius:20px;
+}
+
+h2{
+text-align:center;
+color:#f3ba2f;
+}
+
+input{
+width:100%;
+padding:14px;
+margin:10px 0;
+border:none;
+border-radius:10px;
+font-size:16px;
+}
+
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+font-size:17px;
+cursor:pointer;
+margin-top:15px;
+background:linear-gradient(45deg,#f3ba2f,#ffcc4d);
+color:black;
+}
+
+.link{
+text-align:center;
+margin-top:15px;
+}
+
+.link a{
+color:#1e90ff;
+text-decoration:none;
+}
+
+</style></head><body><div class="container">
+<h2>Login</h2><input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<div class="link">
+<a href="forgot-password.html">Forgot Password?</a>
+</div>
+                                                                                                                                                            
+<div class="link">
+Don't have account?
+<a href="register.html">Register</a>
+</div></div><script>
+
+async function login(){
+
+let email = document.getElementById("email").value.trim()
+let password = document.getElementById("password").value.trim()
+
+let res = await fetch("/login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+password
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+if(data.status==="success"){
+localStorage.setItem("token",data.token)
+localStorage.setItem("sessionEmail", email)
+
+window.location.href="/dashboard.html"
+}
+
+}
+
+
+async function forgotPassword(){
+
+let email = prompt("Enter your email")
+
+if(!email) return
+
+let res = await fetch("/forgot-password",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+if(data.status==="success"){
+
+let code = prompt("Enter reset code sent to email")
+
+let verify = await fetch("/verify-reset-code",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+code
+})
+})
+
+let vdata = await verify.json()
+
+if(vdata.status==="success"){
+
+let newPassword = prompt("Enter new password")
+
+await fetch("/reset-password",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+code,
+newPassword
+})
+})
+
+alert("Password reset successful")
+
+}
+
+}
+
+}
+
+
+</script></body>
+</html>

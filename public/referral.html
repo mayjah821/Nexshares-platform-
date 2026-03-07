@@ -1,0 +1,148 @@
+<!DOCTYPE html><html><head><title>NexShares Referral</title><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+display:flex;
+justify-content:center;
+}
+
+.container{
+width:95%;
+max-width:400px;
+padding:20px;
+}
+
+/* Card */
+
+.card{
+background:rgba(255,255,255,0.1);
+padding:20px;
+border-radius:12px;
+margin-top:15px;
+backdrop-filter:blur(10px);
+text-align:center;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+background:#00c6ff;
+color:black;
+}
+
+/* Referral Link Box */
+
+.refbox{
+background:white;
+color:black;
+padding:12px;
+border-radius:8px;
+word-break:break-all;
+margin-top:10px;
+}
+
+/* Table */
+
+table{
+width:100%;
+margin-top:10px;
+border-collapse:collapse;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid rgba(255,255,255,0.2);
+}
+
+</style></head><body><div class="container"><h2 style="text-align:center">Referral Program</h2><div class="card"><h3>Referral Link</h3><div id="refLink" class="refbox">
+Loading...
+</div><button onclick="copyLink()">
+Copy Referral Link
+</button></div><div class="card"><h3>Referral Earnings</h3><h2 id="refEarnings">0 KES</h2></div><div class="card"><h3>Referral Count</h3><h2 id="refCount">0</h2></div><div class="card"><h3>Your Referrals</h3><table><thead>
+<tr>
+<th>Username</th>
+<th>Package</th>
+</tr>
+</thead><tbody id="refList"><tr>
+<td colspan="2">Loading...</td>
+</tr></tbody></table></div></div><script>
+
+/* Load Referral Data */
+
+async function loadReferral(){
+
+const token = localStorage.getItem("token")
+
+let res = await fetch("/referral-data",{
+headers:{
+Authorization:"Bearer "+token
+}
+})
+
+let data = await res.json()
+
+if(data.status==="ok"){
+
+document.getElementById("refLink").innerText =
+data.data.referralLink
+
+document.getElementById("refEarnings").innerText =
+data.data.referralEarnings + " KES"
+
+document.getElementById("refCount").innerText =
+data.data.referralCount
+
+/* Show referral users */
+
+const refList = document.getElementById("refList")
+
+refList.innerHTML = ""
+
+if(data.data.referrals && data.data.referrals.length > 0){
+
+data.data.referrals.forEach(ref => {
+
+const row = document.createElement("tr")
+
+row.innerHTML = `
+<td>${ref.username}</td>
+<td>${ref.activePackage ? ref.activePackage : "Pending Package"}</td>
+`
+
+refList.appendChild(row)
+
+})
+
+}else{
+
+refList.innerHTML = `
+<tr>
+<td colspan="2">No referrals yet</td>
+</tr>
+`
+
+}
+
+}
+
+}
+
+function copyLink(){
+
+let link = document.getElementById("refLink").innerText
+
+navigator.clipboard.writeText(link)
+
+alert("Referral link copied")
+
+}
+
+loadReferral()
+
+</script></body></html>

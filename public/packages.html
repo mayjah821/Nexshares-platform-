@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>NexShares Packages</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+display:flex;
+justify-content:center;
+}
+
+.container{
+width:95%;
+max-width:400px;
+padding:20px;
+}
+
+/* Header */
+
+h2{
+text-align:center;
+}
+
+/* Package Cards */
+
+.package{
+background:rgba(255,255,255,0.1);
+padding:18px;
+border-radius:12px;
+margin-top:15px;
+backdrop-filter:blur(10px);
+}
+
+.package button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+background:#00c6ff;
+color:black;
+margin-top:10px;
+}
+
+/* Prompt Modal */
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+justify-content:center;
+align-items:center;
+}
+
+.modalbox{
+background:white;
+color:black;
+padding:20px;
+border-radius:12px;
+width:85%;
+max-width:320px;
+text-align:center;
+}
+
+.modalbox button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+background:#0f2027;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Investment Packages</h2>
+
+<!-- PACKAGE 1 -->
+
+<div class="package">
+<h3>1000 Shares</h3>
+<p>Price: 199 KES</p>
+<p>Profit: 53 KES/day</p>
+<p>Duration: 10 days</p>
+
+<button onclick="showPackage('Package 1',199,53,10,1000)">
+Select Package
+</button>
+</div>
+
+
+<!-- PACKAGE 2 -->
+
+<div class="package">
+<h3>2000 Shares</h3>
+<p>Price: 349 KES</p>
+<p>Profit: 74 KES/day</p>
+<p>Duration: 14 days</p>
+
+<button onclick="showPackage('Package 2',349,74,14,2000)">
+Select Package
+</button>
+</div>
+
+
+<!-- PACKAGE 3 -->
+
+<div class="package">
+<h3>5000 Shares</h3>
+<p>Price: 500 KES</p>
+<p>Profit: 97 KES/day</p>
+<p>Duration: 10 days</p>
+
+<button onclick="showPackage('Package 3',500,97,10,5000)">
+Select Package
+</button>
+</div>
+
+
+<!-- PACKAGE 4 -->
+
+<div class="package">
+<h3>10000 Shares</h3>
+<p>Price: 999 KES</p>
+<p>Profit: 213 KES/day</p>
+<p>Duration: 12 days</p>
+
+<button onclick="showPackage('Package 4',999,213,12,10000)">
+Select Package
+</button>
+</div>
+
+
+<!-- PACKAGE 5 -->
+
+<div class="package">
+<h3>20000 Shares</h3>
+<p>Price: 1999 KES</p>
+<p>Profit: 379 KES/day</p>
+<p>Duration: 11 days</p>
+
+<button onclick="showPackage('Package 5',1999,379,11,20000)">
+Select Package
+</button>
+</div>
+
+
+<!-- PACKAGE 6 -->
+
+<div class="package">
+<h3>50000 Shares</h3>
+<p>Price: 4999 KES</p>
+<p>Profit: 692 KES/day</p>
+<p>Duration: 12 days</p>
+
+<button onclick="showPackage('Package 6',4999,692,12,50000)">
+Select Package
+</button>
+</div>
+
+</div>
+
+
+<!-- PACKAGE INFO MODAL -->
+
+<div id="packageModal" class="modal">
+
+<div class="modalbox">
+
+<h3 id="pkgTitle"></h3>
+
+<p id="pkgInfo"></p>
+
+<p style="font-size:14px;color:#666">
+By pressing <b>Proceed</b>, the package cost will be <b>deducted directly from your wallet</b>.
+Ensure you have sufficient balance before confirming the purchase.
+</p>
+
+<button onclick="confirmPackage()">
+Proceed
+</button>
+
+<button onclick="closeModal()">
+Cancel
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+let selectedPackage = null
+
+function showPackage(name, price, profit, duration, shares){
+
+selectedPackage = {
+name,
+price,
+profit,
+duration,
+shares
+}
+
+document.getElementById("pkgTitle").innerText = name
+
+document.getElementById("pkgInfo").innerHTML =
+`
+Price: ${price} KES<br>
+Profit: ${profit} KES/day<br>
+Duration: ${duration} days<br>
+Shares: ${shares}
+`
+
+document.getElementById("packageModal").style.display="flex"
+
+}
+
+
+function closeModal(){
+document.getElementById("packageModal").style.display="none"
+}
+
+
+async function confirmPackage(){
+
+if(!selectedPackage){
+alert("Please select a package")
+return
+}
+
+let email = localStorage.getItem("sessionEmail")
+
+if(!email){
+alert("Session expired")
+return
+}
+
+let res = await fetch("/buy-package",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+packageData:selectedPackage
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+if(data.status==="success"){
+window.location.href="shares-dashboard.html"
+}
+
+}
+
+</script>
+
+</body>
+
+
+</html>
+

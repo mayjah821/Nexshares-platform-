@@ -1,0 +1,189 @@
+        
+<!DOCTYPE html><html lang="en">
+<head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Verify Account</title><style>
+
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(#0b0e11,#121826);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:50vh;
+}                
+
+.container{
+width:95%;
+max-width:400px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(10px);
+padding:25px;
+border-radius:20px;
+text-align:center;
+}
+
+h2{
+color:#f3ba2f;
+}
+
+input{
+width:100%;
+padding:14px;
+margin:15px 0;
+border:none;
+border-radius:10px;
+font-size:16px;
+text-align:center;
+letter-spacing:5px;
+}
+
+button{
+="width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+font-size:17px;
+cursor:pointer;
+margin-top:15px;
+background:linear-gradient(45deg,#1e90ff,#4da3ff);
+color:white;
+}
+
+.resend{
+margin-top:20px;
+background:none;
+color:#f3ba2f;
+border:none;
+cursor:pointer;
+}
+
+</style></head>
+
+<body>
+
+<div class="container">
+
+<h2>Verify Your Account</h2>
+<p>Enter 6-digit verification code sent to your email</p>
+
+
+<input id="code" maxlength="6" placeholder="******">
+
+<button onclick="verifyCode()">
+Verify
+</button>
+
+<button id="resendBtn" class="resend" onclick="resendCode()">
+Resend Code
+</button>
+
+</div>
+
+<script>
+
+async function verifyCode(){
+
+let code = document.getElementById("code").value.trim()
+
+let email = localStorage.getItem("verifyEmail")
+
+if(!email){
+alert("Verification session expired. Please register again.")
+window.location.href="register.html"
+return
+}
+
+if(code.length !== 6){
+alert("Enter 6 digit code")
+return
+}
+
+let res = await fetch("/verify",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email:email,
+code:code
+})
+})
+
+let data = await res.json()
+
+alert(data.message)
+
+if(data.status === "success"){
+
+localStorage.removeItem("verifyEmail")
+
+window.location.href="/login.html"
+
+}
+
+}
+
+
+/* RESEND CODE */
+
+async function resendCode(){
+
+let email = localStorage.getItem("verifyEmail")
+
+let res = await fetch("/resend-code",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email:email
+})
+})
+
+let data = await res.json()
+
+alert(data.message || "Code resent")
+
+startResendTimer()
+
+}
+
+
+/* TIMER */
+
+let resendTimer = 30
+
+function startResendTimer(){
+
+let btn = document.querySelector(".resend")
+
+btn.disabled = true
+
+let interval = setInterval(()=>{
+
+resendTimer--
+
+btn.innerText = "Resend Code ("+resendTimer+")"
+
+if(resendTimer <= 0){
+
+clearInterval(interval)
+
+btn.disabled = false
+
+btn.innerText = "Resend Code"
+
+resendTimer = 30
+
+}
+
+},1000)
+
+}
+
+startResendTimer()
+
+
+</script></body>
+</html>
