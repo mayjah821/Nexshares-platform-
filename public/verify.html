@@ -85,19 +85,22 @@ Resend Code
 async function verifyCode(){
 
 let code = document.getElementById("code").value.trim()
-
 let email = localStorage.getItem("verifyEmail")
 
+/* SESSION CHECK */
 if(!email){
-alert("Verification session expired. Please register again.")
-window.location.href="register.html"
+
+alert("Verification session expired. A new code sent check your email.")
+return await resendVerification()
+}
+
+/* CODE VALIDATION */
+if(code.length !== 6){
+alert("Enter 6 digit verification code")
 return
 }
 
-if(code.length !== 6){
-alert("Enter 6 digit code")
-return
-}
+try{
 
 let res = await fetch("/verify",{
 method:"POST",
@@ -105,62 +108,85 @@ headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-email:email,
-code:code
+email,
+code
 })
 })
 
 let data = await res.json()
 
-alert(data.message)
+alert(data.message || "Verification completed")
 
 if(data.status === "success"){
 
 localStorage.removeItem("verifyEmail")
+window.location.href="dashboard.html"
 
-window.location.href="/login.html"
+}
+
+}catch(err){
+
+console.log(err)
+alert("Verification failed. Try again later.")
 
 }
 
 }
 
 
-/* RESEND CODE */
+/* RESEND CODE FUNCTION */
 
-async function resendCode(){
+async function resendVerification(){
 
 let email = localStorage.getItem("verifyEmail")
 
-let res = await fetch("/resend-code",{
+if(!email){
+alert("Session expired. Please register again.")
+window.location.href="register.html"
+return
+}
+
+try{
+
+await fetch("/resend-verification-code",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
-email:email
-})
+body:JSON.stringify({email})
 })
 
-let data = await res.json()
-
-alert(data.message || "Code resent")
+alert("New verification code sent. Please check your email.")
 
 startResendTimer()
+
+}catch(err){
+
+console.log(err)
+alert("Failed to resend verification code")
+
+}
 
 }
 
 
-/* TIMER */
+/* TIMER SYSTEM */
 
 let resendTimer = 30
+let timerInterval
 
 function startResendTimer(){
 
 let btn = document.querySelector(".resend")
 
-btn.disabled = true
+if(!btn) return
 
-let interval = setInterval(()=>{
+btn.disabled = true
+resendTimer = 30
+
+clearInterval(timerInterval)
+
+timerInterval = setInterval(()=>{
 
 resendTimer--
 
@@ -168,13 +194,10 @@ btn.innerText = "Resend Code ("+resendTimer+")"
 
 if(resendTimer <= 0){
 
-clearInterval(interval)
+clearInterval(timerInterval)
 
 btn.disabled = false
-
 btn.innerText = "Resend Code"
-
-resendTimer = 30
 
 }
 
@@ -182,7 +205,10 @@ resendTimer = 30
 
 }
 
-startResendTimer()
+
+/* START TIMER ON PAGE LOAD */
+
+window.onload = startResendTimer
 
 
 </script></body>

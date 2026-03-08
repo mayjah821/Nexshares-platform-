@@ -71,20 +71,31 @@ Copy Referral Link
 </tr>
 </thead><tbody id="refList"><tr>
 <td colspan="2">Loading...</td>
-</tr></tbody></table></div></div><script>
+</tr></tbody></table></div></div>
+
+<script>
 
 /* Load Referral Data */
 
 async function loadReferral(){
 
+try{
+
 const token = localStorage.getItem("token")
-let res = await
-fetch("https://nexshares.onrender.com/referral-data",{
+
+if(!token){
+alert("Session expired. Please login again.")
+window.location.href="login.html"
+return
+}
+
+let res = await fetch("/referral-data",{
+method:"GET",
 headers:{
-Authorization:"Bearer "+token
+Authorization:"Bearer " + token
 }
 })
-               
+
 let data = await res.json()
 
 if(data.status==="ok"){
@@ -98,10 +109,7 @@ data.data.referralEarnings + " KES"
 document.getElementById("refCount").innerText =
 data.data.referralCount
 
-/* Show referral users */
-
 const refList = document.getElementById("refList")
-
 refList.innerHTML = ""
 
 if(data.data.referrals && data.data.referrals.length > 0){
@@ -112,7 +120,7 @@ const row = document.createElement("tr")
 
 row.innerHTML = `
 <td>${ref.username}</td>
-<td>${ref.activePackage ? ref.activePackage : "Pending Package"}</td>
+<td>${ref.activePackage || "Pending Package"}</td>
 `
 
 refList.appendChild(row)
@@ -129,6 +137,17 @@ refList.innerHTML = `
 
 }
 
+}else{
+
+alert(data.message || "Failed to load referral data")
+
+}
+
+}catch(err){
+
+console.log(err)
+alert("Failed to load referral data")
+
 }
 
 }
@@ -137,12 +156,24 @@ function copyLink(){
 
 let link = document.getElementById("refLink").innerText
 
+if(!link){
+alert("Referral link not available")
+return
+}
+
 navigator.clipboard.writeText(link)
 
 alert("Referral link copied")
 
 }
 
-loadReferral()
+/* Load referral data when page loads */
 
-</script></body></html>
+window.onload = loadReferral
+
+</script>
+
+</script>
+
+</body></html>
+	 

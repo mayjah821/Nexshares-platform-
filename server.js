@@ -1179,51 +1179,91 @@ message:"Server error"
 
 })
 
+
 /* REFERRAL DATA API */
+
 app.get("/referral-data", async (req,res) => {
-  try {
 
-    const authHeader = req.headers.authorization;
+try{
 
-    if(!authHeader){
-      return res.json({status:"error"});
-    }
+const authHeader = req.headers.authorization;
 
-    const token = authHeader.split(" ")[1];
+if(!authHeader){
+return res.json({
+status:"error",
+message:"Unauthorized"
+});
+}
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+const token = authHeader.split(" ")[1];
 
-    const user = await User.findById(decoded.id);
+if(!token){
+return res.json({
+status:"error",
+message:"Invalid session token"
+});
+}
 
-    if(!user){
-      return res.json({status:"error"});
-    }
+/* Safe JWT verification */
 
-    /* Generate referral link */
-    let referralLink = `http://localhost:5000/index.html?ref=${user.referralCode || ""}`;
+let decoded;
 
-    /* Get referral users */
-    const referrals = await User.find({
-      referredBy: user.referralCode
-    }).select("username activePackage");
+try{
+decoded = jwt.verify(token, process.env.JWT_SECRET);
+}catch(err){
+return res.json({
+status:"error",
+message:"Session expired. Please login again."
+});
+}
 
-    res.json({
-      status: "ok",
-      data: {
-        referralLink,
-        referralEarnings: user.referralCommission || 0,
-        referralCount: referrals.length,
-        referrals: referrals.map(r => ({
-          username: r.username,
-          activePackage: r.activePackage || "Pending Package"
-        }))
-      }
-    });
+/* Find user */
 
-  } catch(err) {
-    console.log(err);
-    res.json({status:"error"});
-  }
+const user = await User.findById(decoded.id);
+
+if(!user){
+return res.json({
+status:"error",
+message:"User not found"
+});
+}
+
+/* Generate referral link (IMPORTANT) */
+
+let referralLink = `/index.html?ref=${user.referralCode || ""}`;
+
+/* Find referral users */
+
+const referrals = await User.find({
+referredBy: user.referralCode
+}).select("username activePackage");
+
+/* Send response */
+
+res.json({
+status:"ok",
+data:{
+referralLink,
+referralEarnings: user.referralCommission || 0,
+referralCount: referrals.length,
+referrals: referrals.map(r => ({
+username: r.username,
+activePackage: r.activePackage || "Pending Package"
+}))
+}
+});
+
+}catch(err){
+
+console.log(err);
+
+res.json({
+status:"error",
+message:"Server error"
+});
+
+}
+
 });
 
 

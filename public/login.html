@@ -69,16 +69,22 @@ text-decoration:none;
 <div class="link">
 Don't have account?
 <a href="register.html">Register</a>
-</div></div><script>
+</div></div>
+
+<script>
 
 async function login(){
+
+let btn = event.target
+btn.disabled = true
+btn.innerText = "Logging in..."
 
 let email = document.getElementById("email").value.trim()
 let password = document.getElementById("password").value.trim()
 
+try{
 
-let res = await
-fetch("https://nexshares.onrender.com/withdraw-shares",{
+let res = await fetch("/login",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
@@ -88,26 +94,47 @@ email,
 password
 })
 })
-                              
+
 let data = await res.json()
 
-alert(data.message)
+/* SUCCESS → Redirect to dashboard */
+if(data.status === "success"){
 
-if(data.status==="success"){
 localStorage.setItem("token",data.token)
 localStorage.setItem("sessionEmail", email)
 
 window.location.href="/dashboard.html"
-}
+
+}else{
+
+alert(data.message || "Login failed")
 
 }
 
+}catch(err){
+
+console.log(err)
+alert("Server error. Try again later.")
+
+}
+
+btn.disabled = false
+btn.innerText = "Login"
+
+}
+
+
+/* =============================
+FORGOT PASSWORD FLOW
+============================= */
 
 async function forgotPassword(){
 
 let email = prompt("Enter your email")
 
 if(!email) return
+
+try{
 
 let res = await fetch("/forgot-password",{
 method:"POST",
@@ -119,11 +146,13 @@ body:JSON.stringify({email})
 
 let data = await res.json()
 
-alert(data.message)
+alert(data.message || "Request sent")
 
-if(data.status==="success"){
+if(data.status === "success"){
 
 let code = prompt("Enter reset code sent to email")
+
+if(!code) return
 
 let verify = await fetch("/verify-reset-code",{
 method:"POST",
@@ -138,9 +167,11 @@ code
 
 let vdata = await verify.json()
 
-if(vdata.status==="success"){
+if(vdata.status === "success"){
 
 let newPassword = prompt("Enter new password")
+
+if(!newPassword) return
 
 await fetch("/reset-password",{
 method:"POST",
@@ -160,8 +191,16 @@ alert("Password reset successful")
 
 }
 
+}catch(err){
+
+console.log(err)
+alert("Password reset failed")
+
 }
 
+}
 
-</script></body>
+</script>
+
+</body>
 </html>

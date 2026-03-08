@@ -67,7 +67,9 @@ text-decoration:none;
 <div class="link">
 Already have account?
 <a href="login.html">Login</a>
-</div></div><script>
+</div></div>
+
+<script>
 
 async function register(){
 
@@ -80,8 +82,9 @@ let email = document.getElementById("email").value.trim()
 let password = document.getElementById("password").value.trim()
 let referral = document.getElementById("referral").value.trim()
 
-let res = await
-fetch("https://nexshares.onrender.com/register",{
+try{
+
+let res = await fetch("/register",{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
@@ -93,20 +96,26 @@ password,
 referral
 })
 })
-               
+
 let data = await res.json()
 
-alert(data.message || "Registration complete")
-
+/* SUCCESS → DIRECT REDIRECT */
 if(data.status === "success"){
 
-/* SAVE EMAIL FOR VERIFICATION */
-
 localStorage.setItem("verifyEmail", email)
-
-/* REDIRECT */
-
 window.location.href = "verify.html"
+
+}else{
+
+/* ERROR ONLY → SHOW ALERT */
+alert(data.message || "Registration failed")
+
+}
+
+}catch(err){
+
+console.log(err)
+alert("Server error. Try again later.")
 
 }
 
@@ -114,8 +123,8 @@ btn.disabled = false
 btn.innerText = "Register"
 
 }
-</script>
 
+</script>
 
 <script>
 const params = new URLSearchParams(window.location.search)
